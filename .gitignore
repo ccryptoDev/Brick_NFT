@@ -1,0 +1,10 @@
+## npm packages
+node_modules/
+
+## Misc
+artifacts/
+cache/
+arguments.js
+secrets.sample.json
+secrets.json
+.openzeppelin

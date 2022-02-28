@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721Enumer
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 // import "./ABCCoinUpgradeable.sol";
 
@@ -23,6 +24,8 @@ contract NFTUpgradeable is
     string public baseExtension;
     uint256 lastTokenId;
     uint256 totalABCAmount;
+    /// @notice metadataURI per tokenId
+    mapping(uint256 => string) public metadataURI;
     event MintFinished(address to, uint256 _tokenId);
 
     /**
@@ -76,7 +79,7 @@ contract NFTUpgradeable is
         // Concatenate the unrevealBaseURI and tokenId (via abi.encodePacked).
         return
             bytes(__baseURI).length > 0
-                ? string(abi.encodePacked(__baseURI, tokenId, baseExtension))
+                ? string(abi.encodePacked(__baseURI, Strings.toString(tokenId), baseExtension))
                 : "";
     }
 
@@ -118,7 +121,7 @@ contract NFTUpgradeable is
      * @param _to the address of receiver to get minted.
      * @param _tokenAmount the amount of ABC.
      */
-    function mintNFT(address _to, uint256 _tokenAmount) public {
+    function mintNFT(address _to, uint256 _tokenAmount, string memory tokenUri) public {
         require(
             ABCCoin.transferFrom(msg.sender, receiverAddr, _tokenAmount),
             "ABC token transaction failed!"
@@ -128,6 +131,8 @@ contract NFTUpgradeable is
         _safeMint(_to, _id, "");
         incrementTokenId();
 
+        // store metadataURI
+        metadataURI[_id] = tokenUri;
         // accumulate ABC amount
         totalABCAmount += _tokenAmount;
 
@@ -171,6 +176,26 @@ contract NFTUpgradeable is
             );
         }
         return (_tokensOfOwner);
+    }
+
+    /**
+     * @notice A method to get the list of all tokenURIs owned by any user.
+     * @param _owner the owner address.
+     * @return The tokenURI list of tokens owned by any user.
+     */
+    function getTokenURIListOwnedByUser(address _owner)
+        public
+        view
+        returns (string[] memory)
+    {
+        uint256[] memory _tokensOfOwner = getTokensListOwnedByUser(_owner);
+
+        uint256 i;
+        string[] memory _tokenURIs = new string[](_tokensOfOwner.length);
+        for (i = 0; i < _tokensOfOwner.length; i++) {
+            _tokenURIs[i] = metadataURI[_tokensOfOwner[i]];
+        }
+        return (_tokenURIs);
     }
 
     function nextTokenId() public view returns (uint256) {

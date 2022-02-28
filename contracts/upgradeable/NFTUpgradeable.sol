@@ -20,7 +20,7 @@ contract NFTUpgradeable is
     IERC20Upgradeable ABCCoin;
     address receiverAddr;
     string private _baseURIextended;
-    string public baseExtension = ".json";
+    string public baseExtension;
     uint256 lastTokenId;
     uint256 totalABCAmount;
     event MintFinished(address to, uint256 _tokenId);
@@ -28,9 +28,15 @@ contract NFTUpgradeable is
     /**
      * @notice Initializer
      */
-    function initialize(address _receiverAddr) public initializer {
+    function initialize(address _receiverAddr, IERC20Upgradeable _ABCCoinAddr)
+        public
+        initializer
+    {
         __ERC721_init("Brick", "Brick");
+        __Ownable_init();
         receiverAddr = _receiverAddr;
+        ABCCoin = _ABCCoinAddr;
+        baseExtension = ".json";
     }
 
     /**
@@ -39,6 +45,10 @@ contract NFTUpgradeable is
      */
     function setBaseURI(string memory baseURI_) external onlyOwner {
         _baseURIextended = baseURI_;
+    }
+
+    function getBaseURI() public view returns (string memory) {
+        return _baseURIextended;
     }
 
     /**
@@ -172,8 +182,8 @@ contract NFTUpgradeable is
     }
 
     /*
-    *  @notice get totalABCAmount 
-    */
+     *  @notice get totalABCAmount
+     */
     function getTotalABCAmount() public view returns (uint256) {
         return totalABCAmount;
     }

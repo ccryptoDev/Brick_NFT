@@ -1,4 +1,4 @@
-# Vesting Contract
+# About
 TransparentUpgradeableProxy smart contract
 
 ## Installation
